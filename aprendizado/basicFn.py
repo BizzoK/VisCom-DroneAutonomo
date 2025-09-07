@@ -5,9 +5,12 @@ img = cv.imread('aprendizado\Photos\park.jpg')
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 #cv.imshow('Gray', gray)
 
-# Blur
+# Gaussian Blur
 blur = cv.GaussianBlur(img, (5,5), cv.BORDER_DEFAULT)
 #cv.imshow('Blur', blur)
+
+# Average Blur
+average = cv.blur(img, (7,7))
 
 # Edge Cascade
 canny = cv.Canny(blur, 175, 175)
