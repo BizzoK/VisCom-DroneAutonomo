@@ -5,10 +5,11 @@ def detect_squares_in_frame(frame):
     blurred = cv.GaussianBlur(gray, (5, 5), 0)
     edges = cv.Canny(blurred, 50, 150)
     contours, _ = cv.findContours(edges.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contour_frame = cv.cvtColor(edges, cv.COLOR_GRAY2BGR)
 
     for contour in contours:
         # Ignorar contornos muito pequenos (provavelmente ruído)
-        if cv.contourArea(contour) < 100:
+        if cv.contourArea(contour) < 200:
             continue
 
         # Aproximando o contorno a um polígono
@@ -27,7 +28,9 @@ def detect_squares_in_frame(frame):
             if 0.9 <= aspect_ratio <= 1.1:
                 # Se for um quadrado, desenhe o contorno
                 cv.drawContours(frame, [approx], 0, (0, 255, 0), 2)
+                cv.drawContours(contour_frame, [approx], 0, (0, 255, 0), 2)
                 
+
                 # Posicionando o texto
                 text_x = int(x + w/2)
                 text_y = int(y - 10)
@@ -45,6 +48,8 @@ def detect_squares_in_frame(frame):
                         (int(x + w / 2), int(y + h / 2) + 4), 
                         (0,255,0), 
                         1)
+                
+    cv.imshow('Contours',contour_frame)
     return frame
 
 def main():
