@@ -8,25 +8,27 @@ def get_trackbar_values():
     cv.namedWindow('Trackbars')
     cv.createTrackbar('Threshold1', 'Trackbars', 50, 255, nothing)
     cv.createTrackbar('Threshold2', 'Trackbars', 150, 255, nothing)
-    cv.createTrackbar('Dilate_Kernel', 'Trackbars', 1, 5, nothing)
+    cv.createTrackbar('Morph_Kernel', 'Trackbars', 1, 5, nothing)
 
 def detect_squares_in_frame(frame):
     # Obtém os valores dos trackbars
     threshold1 = cv.getTrackbarPos('Threshold1', 'Trackbars')
     threshold2 = cv.getTrackbarPos('Threshold2', 'Trackbars')
-    dilate_kernel_size = cv.getTrackbarPos('Dilate_Kernel', 'Trackbars')
-    
+    morph_kernel_size = cv.getTrackbarPos('Morph_Kernel', 'Trackbars')
+
     # Convertendo para escala de cinza e aplicando desfoque
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     blurred = cv.GaussianBlur(gray, (7, 7), 0)  # Aumentado o kernel para 7x7
     # Usando Canny com os limiares ajustáveis
     edges = cv.Canny(blurred, threshold1, threshold2)
     
-    # Cria um kernel (elemento estruturante)
-    if dilate_kernel_size > 0:
-        kernel = np.ones((dilate_kernel_size, dilate_kernel_size), np.uint8)
-        # Aplica a dilatação
+    # --- Fechamento Morfológico: Dilatar e depois erodir ---
+    if morph_kernel_size > 0:
+        kernel = np.ones((morph_kernel_size, morph_kernel_size), np.uint8)
+        # Dilata para fechar buracos
         edges = cv.dilate(edges, kernel, iterations=1)
+        # Erodir para restaurar o tamanho original
+        edges = cv.erode(edges, kernel, iterations=1)
     
     cv.imshow('Edges', edges)
 
@@ -49,10 +51,13 @@ def detect_squares_in_frame(frame):
             # Pegando as coordenadas do retângulo delimitador
             x, y, w, h = cv.boundingRect(approx)
             
-            aspect_ratio = float(w) / h
-            
+            #aspect_ratio = float(w) / h
+            poly_area = cv.contourArea(approx)
+            rect_area = w * h
+
             # Verificando se a relação de aspecto está próxima de 1 (indicando um quadrado)
-            if 0.8 <= aspect_ratio <= 1.3:
+            #if 0.8 <= aspect_ratio <= 1.3:
+            if rect_area > 0 and (poly_area / rect_area) > 0.75:
                 # Se for um quadrado, desenhe o contorno
                 cv.drawContours(frame, [approx], 0, (0, 255, 0), 2)
                 cv.drawContours(contour_frame, [approx], 0, (0, 255, 0), 2)
