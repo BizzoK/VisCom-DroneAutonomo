@@ -2,12 +2,9 @@ import cv2 as cv
 import numpy as np
 import time
 
-# --- CONSTANTES PARA CALCULO DE DISTANCIA ---
-# O lado do seu quadrado em cm (o mesmo da calibração)
 #KNOWN_WIDTH_CM = 8.5
 KNOWN_WIDTH_CM = 30
 
-# O valor que você calculou pela fórmula
 #FOCAL_LENGTH_PIXELS = 451.76
 FOCAL_LENGTH_PIXELS = 476
 
@@ -18,18 +15,17 @@ FOCAL_LENGTH_PIXELS = 476
 def detect_squares_in_frame(frame, center_x, center_y):
     # ETAPA DE PRÉ-PROCESSAMENTO ROBUSTO
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    blurred = cv.GaussianBlur(gray, (5, 5), 0) # Um blur menor pode ser melhor aqui
+    blurred = cv.GaussianBlur(gray, (5, 5), 0)
     binary_image = cv.adaptiveThreshold(
         blurred, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, 
-        cv.THRESH_BINARY_INV, # Invertemos para que o quadrado fique branco sobre fundo preto
-        21, 5   # C - ajuste fino
+        cv.THRESH_BINARY_INV,
+        21, 5
     )
 
-    # Opcional: Usar fechamento morfológico para unir arestas quebradas
+    # Opcional: Fechamento morfológico
     #kernel = np.ones((5, 5), np.uint8)
     #binary_image = cv.morphologyEx(binary_image, cv.MORPH_CLOSE, kernel)
 
-    # Agora, use findContours na imagem binária resultante
     contours, _ = cv.findContours(binary_image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     contour_frame = cv.cvtColor(binary_image, cv.COLOR_GRAY2BGR)
 
@@ -37,8 +33,6 @@ def detect_squares_in_frame(frame, center_x, center_y):
     error_x = 0
     error_y = 0
     distance_cm = 0
-    status = ''
-
 
     if contours:
         # Pega o maior contorno para evitar processar ruídos menores
@@ -70,7 +64,7 @@ def detect_squares_in_frame(frame, center_x, center_y):
                     error_x = square_center_x - center_x
                     error_y = square_center_y - center_y
 
-                    # CÁLCULO DE DISTÂNCIA ##
+                    # CÁLCULO DE DISTÂNCIA 
                     # A largura em pixels é a maior dimensão do retângulo rotacionado
                     pixel_width = w 
                     if pixel_width > 0:
@@ -119,7 +113,6 @@ def main():
     aprox_final_tempo = 0
     aprox_final_alt = 40
 
-
     # Parâmetros da retícula central
     crosshair_size = 15
     crosshair_color = (0, 0, 255)
@@ -138,7 +131,6 @@ def main():
         cv.line(frame, (center_x - crosshair_size, center_y), (center_x + crosshair_size, center_y), crosshair_color, crosshair_thickness)
         cv.line(frame, (center_x, center_y - crosshair_size), (center_x, center_y + crosshair_size), crosshair_color, crosshair_thickness)
 
-        
         processed_frame, new_error_x, new_error_y, found, new_distance= detect_squares_in_frame(frame, center_x, center_y)
         
         # MÁQUINA DE ESTADOS
@@ -172,7 +164,6 @@ def main():
             text_color = (255, 255, 255)
 
 
-        # Exibe sempre o ÚLTIMO erro conhecido, com a formatação
         text_error_x = f"Erro X: {last_known_error_x:04d} px"
         text_error_y = f"Erro Y: {last_known_error_y:04d} px"
         text_distance = f"Altitude: {last_known_distance:.2f} cm"
@@ -180,7 +171,6 @@ def main():
         cv.putText(processed_frame, text_error_y, (20, 50), cv.FONT_HERSHEY_SIMPLEX, 0.7, text_color, 2)
         cv.putText(processed_frame, text_distance, (220, 25), cv.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
         cv.putText(processed_frame, f"Status: {mission_status}", (220, 50), cv.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 255), 2)
-
 
         cv.imshow('Missão Autônoma', processed_frame)
 
