@@ -10,7 +10,7 @@
 
 ## Demonstração do Sistema
 
-[Insira o vídeo arrastando o arquivo testeVisComp.mp4 para o editor do GitHub]
+https://github.com/user-attachments/assets/8276738a-6aa5-4191-8ade-fb76d31ec8ae
 
 ## Sobre o Projeto
 
